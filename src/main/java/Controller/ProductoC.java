@@ -30,6 +30,7 @@ public class ProductoC implements Serializable {
 
     public void registrar() throws Exception {
         try {
+            producto.setNombre(caseMayuscula(producto.getNombre()));
             if (!dao.existe(producto, lstProducto)) {
                 dao.guardar(producto);
                 listar();
@@ -70,6 +71,23 @@ public class ProductoC implements Serializable {
             Logger log = lgmngr.getLogger(Logger.GLOBAL_LOGGER_NAME);
             log.log(Level.INFO, "Error en eliminar ProductoC: {0}", e.getMessage());
         }
+    }
+
+    public String caseMayuscula(String camelcase) {
+        char ch[] = camelcase.toCharArray();
+        for (int i = 0; i < camelcase.length(); i++) {
+            if (i == 0 && ch[i] != ' ' || ch[i] != ' ' && ch[i - 1] == ' ') {  // Si se encuentra el primer carácter de una palabra
+                if (ch[i] >= 'a' && ch[i] <= 'z') {      // Si está en minúsculas
+                    ch[i] = (char) (ch[i] - 'a' + 'A');  // Convertir en mayúsculas
+                }
+            } // Si aparte del primer carácter cualquiera está en mayúsculas
+            else if (ch[i] >= 'a' && ch[i] <= 'z') {     // Convertir en minúsculas
+                ch[i] = (char) (ch[i] - 'a' + 'A');
+            }
+        }
+        String st = new String(ch);
+        camelcase = st;
+        return camelcase;
     }
 
     public void cambiarestado() throws Exception {
@@ -149,5 +167,4 @@ public class ProductoC implements Serializable {
         this.estado = estado;
     }
 
-    
 }
