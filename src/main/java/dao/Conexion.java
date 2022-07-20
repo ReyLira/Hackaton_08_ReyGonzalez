@@ -15,9 +15,9 @@ public class Conexion {
 
         try {
 
-            String user = "sa2";
+            String user = "sa";
 
-            String pwd = "73829730";
+            String pwd = "@abc123@";
 
             String driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 
