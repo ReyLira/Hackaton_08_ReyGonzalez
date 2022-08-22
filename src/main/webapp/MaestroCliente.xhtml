@@ -1,0 +1,190 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+    <h:head>
+        <title>Listado de Clientes</title>
+        <!--<f:event listener="#{ClienteC.listar()}" type="preRenderView" />-->
+    </h:head>
+
+    <h:form>
+        <p:sidebar widgetVar="sidebar1">
+            <h3>Menu</h3>
+            <p:megaMenu orientation="vertical" autoDisplay="false">
+                <p:submenu label="Mantenimiento Maestras">
+                    <p:column>
+                        <p:submenu label="Tablas Maestras:">
+                            <p:menuitem value="Cliente" outcome="MaestroCliente.xhtml" icon="pi pi-fw pi-user"/>
+                        </p:submenu>
+                    </p:column>
+                </p:submenu>
+                <p:submenu label="Transaccionales">
+                    <p:column>
+                        <p:submenu label="Tabla Transaccional:">
+                            <p:menuitem value="Ventas" outcome="Ventas.xhtml" icon="pi pi-fw pi-briefcase"/>
+                        </p:submenu>
+                    </p:column>
+                </p:submenu>
+            </p:megaMenu>
+        </p:sidebar>
+        <p:commandButton icon="pi pi-list" type="button" onclick="PF('sidebar1').show()" styleClass="p-mr-2" />
+    </h:form>
+
+    <h:body>  
+        <center> 
+            <p:growl id="mensaje" showDetail="true" />
+            <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true" />
+
+            <h:form id="form">
+
+                <p:panelGrid columns="2">
+                    <f:facet name= "header"> Registro de Clientes </f:facet> 
+                    <p:outputLabel value="Nombre" /> <p:inputText maxlength="50"  style="width: 336px"  value="#{ClienteC.cli.nombre}"  >
+                        <p:keyFilter regEx="/[A-Z_a-z_ñ_á_é_í_ó_ú_ ]/"/>
+                    </p:inputText>
+
+                    <p:outputLabel value="Apellidos" /> <p:inputText maxlength="60" style="width: 336px"  value="#{ClienteC.cli.apellidos}"  >
+                        <p:keyFilter regEx="/[A-Z_a-z_ñ_á_é_í_ó_ú_ ]/"/>
+                    </p:inputText>
+                    <p:outputLabel value="DNI" /> <p:inputText maxlength="8"  placeholder="Escriba su DNI"  value="#{ClienteC.cli.dni}">
+                        <p:keyFilter regEx="/[0-9]/" />
+                    </p:inputText>
+                    <p:outputLabel value="Teléfono" /> <p:inputText maxlength="9"  value="#{ClienteC.cli.celular}"  >
+                        <p:keyFilter regEx="/[0-9]/" />
+                    </p:inputText>
+                    <p:outputLabel value="Direccion" /> <p:inputText maxlength="60"  style="width: 336px"  value="#{ClienteC.cli.direccion}"  >
+                        <p:keyFilter regEx="/[A-Z_a-z_ñ_á_é_í_ó_ú__0-9_:_ _@]/"/>
+                    </p:inputText>
+
+
+                    <p:outputLabel value="Ubigeo:"/>
+                    <p:selectOneMenu id="ubigeo" value="#{ClienteC.cli.ubigeo.idubi}"  style="width: 336px" filter="true" filterMatchMode="startsWith"  label="UBIGEO">
+                        <f:selectItem itemLabel="Selecione el Distrito" noSelectionOption="true"/>
+                        <f:selectItems value="#{UbigeoC.lstubi}" var="ubigeo"
+                                       itemValue="#{ubigeo.idubi}" 
+                                       itemLabel="#{ubigeo.disubi}, 
+                                       #{ubigeo.proubi}, 
+                                       #{ubigeo.depubi}"/>
+                    </p:selectOneMenu>
+
+
+                    <p:commandButton value="Registrar" actionListener="#{ClienteC.registrar()}" update="tablaCli mensaje"/>
+                    <p:commandButton value="Limpiar" actionListener="#{ClienteC.limpiar()}" update="tablaCli mensaje" />
+                </p:panelGrid>
+
+                <!--  Listado del Clientes -->
+
+                <p:dataTable var="tblcli" id="tablaCli" value="#{ClienteC.listadoCli}" rows="10" rowKey="#{tblcli.idcli}"
+                             paginator="true" selection="#{ClienteC.climodificar}" selectionMode="single" 
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                             rowsPerPageTemplate="5,10,{ShowAll|'All'}" >
+                    <f:facet name="header">
+                        <div style="float:right;padding-top: 5px;">
+                            <h:commandLink>
+                                <p:graphicImage url="../resources/images/excel.png" width="36"/>
+                                <p:dataExporter type="xls" target="tablaCli" fileName="Clientes.xls" pageOnly="false" />
+                            </h:commandLink>
+                        </div>  
+                        <p:commandButton  value= "Clientes PDF" ajax="false" actionListener="${ClienteC.REPORTE_PDF_ADQUISICION(CodigoUsuario)}"
+                                          onclick="this.form.target = '_blank'"/>
+                    </f:facet>
+
+                    <p:column headerText="Nombre y Apellidos" filterBy="#{tblcli.nombre},#{tblcli.nombre}" sortBy="#{tblcli.nombre},#{tblcli.nombre}" >
+                        <h:outputText value="#{tblcli.nombre},#{tblcli.apellidos}" />
+                    </p:column>
+
+                    <p:column headerText="DNI" filterBy="#{tblcli.dni}" sortBy="#{tblcli.dni}">
+                        <h:outputText value="#{tblcli.dni}" />
+                    </p:column>
+                    <p:column headerText="Teléfono">
+                        <h:outputText value="#{tblcli.celular}" />
+                    </p:column>
+                    <p:column headerText="Direccion">
+                        <h:outputText value="#{tblcli.direccion}" />
+                    </p:column>
+                    <p:column headerText="Ciudad">
+                        <h:outputText value="#{tblcli.ubigeo.disubi}" />
+                    </p:column>
+
+                    <p:column exportable="false">
+                        <p:commandButton oncomplete="PF('wdlgDatos').show();" value="Modificar" update=":frmdialogo" icon="pi pi-user-edit">
+                            <f:setPropertyActionListener value="#{tblcli}" target="#{ClienteC.climodificar}" />
+
+                        </p:commandButton>
+                    </p:column> 
+                    <p:column exportable="false">
+                        <p:commandButton value="Eliminar" icon="pi pi-user-minus" actionListener="#{ClienteC.eliminar(tblcli)}" update="tablaCli">
+                            <p:confirm header="Confirmación" message="¿Deseas eliminar?" icon="ui_icon_trash"/>
+                        </p:commandButton>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times" />
+                        </p:confirmDialog> 
+                    </p:column>
+
+                    <f:facet name="footer">
+                        EN TOTAL HAY #{fn:length(ClienteC.listadoCli)} REGISTROS.
+                    </f:facet>
+                </p:dataTable>
+            </h:form>
+
+
+            <!--  Listado del Cliente -->
+
+
+            <p:dialog header="Datos del Cliente" widgetVar="wdlgDatos" id="dlgDatos" modal="true" showEffect="explode" hideEffect="bounce" resizable="false">
+                <p:outputPanel id="clientedetalle" style="text-align:center;">
+                    <h:form id="frmdialogo"> 
+                        <p:panelGrid columns="2"  rendered="#{not empty ClienteC.climodificar}" >
+
+                            <p:outputLabel value="Nombre" /> <p:inputText maxlength="50" required="true" requiredMessage="¡Rellene el Campo Nombre!"   value="#{ClienteC.climodificar.nombre}"  >
+                                <p:keyFilter regEx="/[A-Z_a-z_ñ_á_é_í_ó_ú_ ]/"/>
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellidos" /> <p:inputText maxlength="60" required="true" requiredMessage="¡Rellene el Campo de Apellidos!"  value="#{ClienteC.climodificar.apellidos}"  >
+                                <p:keyFilter regEx="/[A-Z_a-z_ñ_á_é_í_ó_ú_ ]/"/>
+                            </p:inputText>
+                            <p:outputLabel value="DNI" /> <p:inputText maxlength="8"  placeholder="Escriba su DNI" required="true" requiredMessage="¡Rellene el Campo DNI!"  value="#{ClienteC.climodificar.dni}">
+                                <p:keyFilter regEx="/[0-9]/" />
+                            </p:inputText>
+                            <p:outputLabel value="Teléfono" /> <p:inputText maxlength="9" required="true" requiredMessage="¡Rellene el Campo Teléfono!"  value="#{ClienteC.climodificar.celular}"  >
+                                <p:keyFilter regEx="/[0-9]/" />
+                            </p:inputText>
+                            <p:outputLabel value="Direccion" /> <p:inputText maxlength="60" required="true" requiredMessage="¡Rellene el Campo Dirección!"   value="#{ClienteC.climodificar.direccion}"  >
+                                <p:keyFilter regEx="/[A-Z_a-z_ñ_á_é_í_ó_ú__0-9_:_ _@]/"/>
+                            </p:inputText>
+
+
+                            <p:outputLabel value="UBIGEO:"/>
+                            <p:selectOneMenu id="ubigeo" value="#{ClienteC.climodificar.ubigeo.idubi}"  required="true" requiredMessage="¡Rellene el Campo Ubigeo!" style="width: 336px" filter="true" filterMatchMode="startsWith"  label="UBIGEO">
+                                <f:selectItem itemLabel="Selecione el Distrito" noSelectionOption="true"/>
+                                <f:selectItems value="#{ClienteC.lstUbi}" var="ubigeo"
+                                               itemValue="#{ubigeo.idubi}" 
+                                               itemLabel="#{ubigeo.disubi}, 
+                                               #{ubigeo.proubi}, 
+                                               #{ubigeo.depubi}"/>
+                            </p:selectOneMenu>
+
+                            <p:commandButton value="Cancelar" immediate="true" oncomplete="PF('wdlgDatos').hide();" />
+
+                            <p:commandButton value="Modificar" actionListener="#{ClienteC.modificar()}" 
+                                             update=":form:tablaCli" oncomplete="PF('wdlgDatos').hide();" >
+                                <p:confirm header="Confirmación" message="¿Deseas Modificar?" icon="ui-icon-alert"/>
+                                <p:tooltip trackMouse="true"/>
+
+                            </p:commandButton>
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>
+                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>
+                            </p:confirmDialog>
+                        </p:panelGrid>
+                    </h:form>
+                </p:outputPanel>
+            </p:dialog>
+        </center> 
+    </h:body>
+</html>
+

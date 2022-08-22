@@ -1,0 +1,168 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+    <h:head>
+        <title> Listado de Venta</title>
+        <!--<f:event listener="#{VentaC.listar()}" type="preRenderView" />-->
+    </h:head>
+    <h:form>
+        <p:sidebar widgetVar="sidebar1">
+            <h3>Menu</h3>
+            <p:megaMenu orientation="vertical" autoDisplay="false">
+                <p:submenu label="Mantenimiento Maestras">
+                    <p:column>
+                        <p:submenu label="Tablas Maestras:">
+                            <p:menuitem value="Cliente" outcome="MaestroCliente.xhtml" icon="pi pi-fw pi-user"/>
+                        </p:submenu>
+                    </p:column>
+                </p:submenu>
+                <p:submenu label="Transaccionales">
+                    <p:column>
+                        <p:submenu label="Tabla Transaccional:">
+                            <p:menuitem value="Ventas" outcome="Ventas.xhtml" icon="pi pi-fw pi-briefcase"/>
+                        </p:submenu>
+                    </p:column>
+                </p:submenu>
+            </p:megaMenu>
+        </p:sidebar>
+        <p:commandButton icon="pi pi-list" type="button" onclick="PF('sidebar1').show()" styleClass="p-mr-2" />
+    </h:form>
+
+    <h:body>      
+        <center> 
+            <p:growl id="mensaje" showDetail="true" />
+            <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true" />
+
+            <h:form id="frmVentDet">
+                <p:panelGrid columns="2" style="margin: 0 auto; ">
+                    <f:facet name= "header">Ventas</f:facet> 
+                    <p:outputLabel value="Cliente" for="cli"/>
+                    <p:selectOneMenu id="cli" value="#{ventadetalleC.ventadetalle.cliente.idcli}" style="width:360px" 
+                                     filter="true" filterMatchMode="contains" required="true" requiredMessage="Requiere Cliente" >
+                        <f:selectItem noSelectionOption="true" itemLabel="Seleccione" itemValue="#{null}"/>
+                        <f:selectItems value="#{ClienteC.listadoCli}" var="cliente"
+                                       itemValue="#{cliente.idcli}" 
+                                       itemLabel="#{cliente.nombre}  
+                                       #{cliente.apellidos}"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Vendedor" for="ven"/>
+                    <p:selectOneMenu id="ven" value="#{ventadetalleC.ventadetalle.empleado.IDEMP}" style="width:360px" 
+                                     filter="true" filterMatchMode="contains" required="true" requiredMessage="Requiere Cliente" >
+                        <f:selectItem noSelectionOption="true" itemLabel="Seleccione" itemValue="#{null}"/>
+                        <f:selectItems value="#{empleadoC.listadoVendedor}" var="vendedor"
+                                       itemValue="#{vendedor.IDEMP}" 
+                                       itemLabel="#{vendedor.NOMEMP}
+                                       #{vendedor.APEEMP}"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Producto" for="pro"/>
+                    <p:selectOneMenu id="pro" value="#{ventadetalleC.ventadetalle.subfamilia.IDSUBFAM}" style="width: 360px" filter="true" filterMatchMode="startsWith"  label="MARCA">
+                        <f:selectItem itemLabel="Selecione el Producto" noSelectionOption="true"/>
+                        <f:selectItems value="#{subfamiliaC.listado}" var="producto"
+                                       itemValue="#{producto.IDSUBFAM}"
+                                       itemLabel="#{producto.NOMSUBFAM}"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel  value="Cantidad *"/>
+                    <p:inputText placeholder="Escribe aquí" id="cantidad" value="#{ventadetalleC.ventadetalle.CANTVENDET}" 
+                                 required="true" requiredMessage="Falta Cantidad" maxlength="30" style="width: 100px">
+                        <p:keyFilter regEx="/[1-9]/" />
+                    </p:inputText>
+
+                    <p:commandButton value="+ Agregar" actionListener="#{ventadetalleC.agregarFila()}" 
+                                     update="frmVentDet,:frmVentaDetalle mensaje" />
+
+                </p:panelGrid>
+
+            </h:form>
+
+            <h:form id="frmVentaDetalle">
+                <p:dataTable var="vede" id="tablaVentaDetalle" value="#{ventadetalleC.listadoVentaDetalle}"
+                             rows="5" paginator="true" 
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                             rowsPerPageTemplate="5,10,15,20"
+                             >
+
+                    <p:column headerText="Cliente">
+                        <h:outputText value="#{vede.cliente.nombre}"/>
+                    </p:column>          
+                    <p:column headerText="Producto">
+                        <h:outputText value="#{vede.subfamilia.NOMSUBFAM}"/>
+                    </p:column>
+                    <p:column headerText="Precio">
+                        <h:outputText value="#{vede.subfamilia.PRESUBFAM}"/>
+                    </p:column>
+                    <p:column headerText="Cantidad">
+                        <h:outputText value="#{vede.CANTVENDET}"/>
+                    </p:column>
+                    <p:column headerText="Sub-Total">
+                        <h:outputText value="#{vede.subtotal}">
+                            <f:convertNumber type="currency" currencySymbol="S/. " minFractionDigits="2"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Eliminar">
+                        <p:commandButton value="Eliminar" actionListener="#{ventadetalleC.eliminarFila(vede)}" 
+                                         update="frmVentDet,:frmVentaDetalle"  icon="ui-icon-plus" />
+                    </p:column>
+                </p:dataTable>
+                <p:separator/>
+                <h:panelGrid id="total" columns="2" style="font-size: 24px; margin: 0 auto">
+                    TOTAL 
+                    <h:outputText
+                        value="#{ventadetalleC.ventadetalle.total}">
+                        <f:convertNumber type="currency" currencySymbol="S/. " minFractionDigits="2"/>
+                    </h:outputText>
+                </h:panelGrid>
+                <p:separator/>
+                <p:commandButton value="Registrar Venta" actionListener="#{ventadetalleC.registrar()}"  oncomplete="PF('datosboleta').show();"
+                                 update="frmVentDet,:frmVentaDetalle,:ListarVentas mensaje" >
+                </p:commandButton>
+
+            </h:form>
+
+            <h:form id="ListarVentas">
+                <p:fieldset legend="Ventas" toggleable="true">
+
+                    <p:dataTable var="vede" id="tablaVentaDetalle" value="#{ventadetalleC.vendidos}"
+                                 rows="5" paginator="true" 
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                 rowsPerPageTemplate="5,10,15,20"
+                                 >
+                        <f:facet name="header">
+                            <div style="float:right;padding-top: 5px;">
+                                <h:commandLink>
+                                    <p:graphicImage url="../resources/images/excel.png" width="36"/>
+                                    <p:dataExporter type="xls" target="tablaVentaDetalle" fileName="Ventas.xls" pageOnly="false" />
+                                </h:commandLink>
+                            </div>  
+                            <p:commandButton  value= "Ventas PDF" ajax="false" actionListener="${ventadetalleC.REPORTE_PDF_ADQUISICION(CodigoUsuario)}"
+                                              onclick="this.form.target = '_blank'"/>
+                        </f:facet>
+                        <p:column headerText="CLIENTES">
+                            <h:outputText value="#{vede.cliente.nombre},#{vede.cliente.apellidos}"/>
+                        </p:column>
+
+                        <p:column headerText="PRODUCTO">
+                            <h:outputText value="#{vede.subfamilia.NOMSUBFAM}"/>
+                        </p:column>
+                        <p:column headerText="Cantidad">
+                            <h:outputText value="#{vede.CANTVENDET}"/>
+                        </p:column>          
+                        <p:column headerText="PRECIO UNITARIO">
+                            <h:outputText value="#{vede.subfamilia.PRESUBFAM}"/>
+                        </p:column>
+                        <p:column headerText="SUBTOTAL">
+                            <h:outputText value="#{vede.subtotal}"/>
+                        </p:column>    
+                    </p:dataTable>
+                </p:fieldset>
+            </h:form>
+        </center> 
+    </h:body>  
+
+</html>
+
